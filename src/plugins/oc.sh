@@ -11,7 +11,7 @@ proxy_mode=$(uci -q get openclash.config.proxy_mode)
 LOGTIME=$(echo $(date "+%Y-%m-%d %H:%M:%S"))
 C_CORE_TYPE=$(uci -q get openclash.config.core_type)
 cfg_yaml=$(ls /etc/openclash/config/ | grep -E '.yaml')
-banner=$(cat src/plugins/banner)
+banner='PHPTeleBotWrt'
 printf "OpenClash   : $op_version
 Core Tun    : $core_tun_version
 Core Meta   : $core_meta_version

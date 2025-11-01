@@ -153,7 +153,7 @@ if [[ $1 == "i" ]]; then
 
 	# Cloning repo
 	echo -e "Downloading $TLNAME files..."
-	git clone https://github.com/helmiau/PHPTeleBotWrt "$INSDIR"
+git clone https://github.com/noobzhax/PHPTeleBotWrt "$INSDIR"
 	
 	if [ $? -eq 0 ]; then
 		echo -e "$TLNAME downloaded successfully."

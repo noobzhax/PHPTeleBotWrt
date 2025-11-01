@@ -2,7 +2,7 @@
 require_once __DIR__ . "/src/PHPTelebot.php";
 require_once __DIR__ . "/src/xc.php";
 error_reporting(E_ALL); ini_set('display_errors', 1);
-$banner = file_get_contents("src/plugins/banner");
+$banner = "<b>PHPTeleBotWrt</b>";
 $options = ["parse_mode" => "html", "reply" => true];
 
 // Read token & username
@@ -23,7 +23,7 @@ $ads = [
 		"<span class='tg-spoiler'>Read PHPTeleBotWrt wiki and information <a href='https://www.helmiau.com/blog/phptelebotwrt'>here</a>.</span>",
 		"<span class='tg-spoiler'>PHPTeleBotWrt devs: <a href='https://github.com/radyakaze/phptelebot'>radyakaze</a>, <a href='https://github.com/OppaiCyber/XppaiWRT'>OppaiCyber-XppaiWRT</a>, <a href='https://github.com/xentolopx/eXppaiWRT'>xentolopx-eXppaiWRT</a> and <a href='https://helmiau.com/pay'>Helmi Amirudin</a>.</span>",
 		"<span class='tg-spoiler'>Make sure your device always connected to network.</span>",
-        "<span class='tg-spoiler'>Support eXppaiWRT to by sending fund to BCA : 0131630831 | DANA / OVO : 087837872813 | Dimas Syahrul Hidayat</span>",
+        
     ];
 $randAds = $ads[array_rand($ads)];
 
@@ -44,7 +44,7 @@ $bot->cmd("/ping", function () {
 $bot->cmd("/start", function () {
     Bot::sendMessage(
 		$GLOBALS["banner"] . "\n" .
-		"Welcome to PHPTeleBotWrt!\nRun /cmdlist to see all available comands.\n\n Source: https://github.com/helmiau/PHPTeleBotWrt\n Donate: https://helmiau.com/pay"
+		"Welcome to PHPTeleBotWrt!\nRun /cmdlist to see all available comands.\n\n Source: https://github.com/helmiau/PHPTeleBotWrt"
 		. "\n\n" . $GLOBALS["randAds"]
 		,$GLOBALS["options"]);
 });

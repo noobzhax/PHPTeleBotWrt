@@ -344,6 +344,6 @@ Add/remove **PHPTeleBotWrt** to Auto-startup **`LuCI - System - Scheduled Tasks`
 - [**Pringgo Radianto (Radya)**](https://github.com/radyakaze/phptelebot) - PHPTeleBot Base Development.
 - Dimas Syahrul Hidayat [**Hacked Repo**](https://github.com/OppaiCyber/XppaiWRT) & [**New Repo**](https://github.com/xentolopx/eXppaiWRT) - Implement bot to OpenWrt.
 
-	> Support Dimas on BCA : **`0131630831`**, DANA/OVO: **`087837872813`**, A.N. Dimas Syahrul Hidayat.
+
 	
 - [**Helmi Amirudin**](https://github.com/helmiau) - Features improvements such as installations, commands, universalize for all firmware and other many rich features. [Donate Helmi](https://helmiau.com/pay).
