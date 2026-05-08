@@ -256,7 +256,7 @@ function MyXL($number) {
         $output .= "↳ Exp: {$pkg['expiry']}\n";
         
         foreach ($pkg['quotas'] as $quota) {
-            $bar = str_repeat("🟩", round($quota['percent'] / 10)) . str_repeat("🟥", 10 - round($quota['percent'] / 10));
+            $bar = str_repeat("■", round($quota['percent'] / 10)) . str_repeat("□", 10 - round($quota['percent'] / 10));
             $output .= "↳ {$quota['name']}: {$quota['remaining']} / {$quota['total']} ($bar {$quota['percent']}%)\n";
         }
         $output .= "━━━━━━━━━━━━━━━━━━\n";

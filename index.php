@@ -697,8 +697,8 @@ $bot->cmd("/myxl", function ($number) {
             "↳ With country code: <code>6287812345678</code>\n" .
             "↳ Without code: <code>087812345678</code>\n\n" .
             "<b>Example:</b>\n" .
-            "↳ <code>/myxl 087780267559</code>\n" .
-            "↳ <code>/myxl 6287780267559</code>\n\n" .
+            "↳ <code>/myxl 087812345678</code>\n" .
+            "↳ <code>/myxl 6287812345678</code>\n\n" .
             "<b>Note:</b>\n" .
             "↳ Only supports XL and Axis numbers.\n" .
             "↳ Make sure the number is active."

@@ -299,7 +299,7 @@ elif [[ $1 == "r" ]]; then
 # Check status command
 elif [[ $1 == "c" ]]; then
 	# https://linuxconfig.org/how-to-kill-a-running-process-on-linux
-	if [[ $(ps -a | grep "php-cli\|php8-cli") -gt 0 ]]; then
+	if ps -a | grep -q "php-cli\|php8-cli"; then
 		echo -e "✔️ $TLNAME is running with detail:"
 		jobs -p
 		# ps -a | grep "php-cli\|php8-cli"
@@ -317,7 +317,7 @@ elif [[ $1 == "s" ]]; then
 	# [ -n "$pids" ] && kill -- "${pids[@]/#/-}"
 	
 	# https://linuxconfig.org/how-to-kill-a-running-process-on-linux
-	if [[ $(ps -a | grep "php-cli\|php8-cli") -gt 0 ]]; then
+	if ps -a | grep -q "php-cli\|php8-cli"; then
 		kill $(ps -a | grep "php-cli\|php8-cli")
 		echo -e "✔️ $TLNAME stopped successfully."
 		exit 0
