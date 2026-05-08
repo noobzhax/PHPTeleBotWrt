@@ -140,12 +140,12 @@ $bot->cmd("/cmdlist", function () {
  ↳/adbrestnet ADB_ID DELAY: Restart device network
  ↳/adbsms ADB_ID: Retrieve SMS from device ID
  ↳*-Replace [ADB_ID] with your device id, take from [adb devices] command.
- ↳*-You can check multiple [ADB_ID] by writing like [\"adbid001 adbid002 adbid003\"] with double quotes.
+ ↳*-You can check multiple [ADB_ID] by writing like ["adbid001 adbid002 adbid003"] with double quotes.
  ↳*-[DELAY] is a delay (seconds) between disabling and re-enabling airplane mode for network restart.
  
 📁XL Commands
  ↳/myxl number : Check XL package status
- ↳*-Example: /myxl 087812345678
+ ↳*-Example: /myxl 087812345678"
  
 		. "\n\n" 
 		,$GLOBALS["options"]);
