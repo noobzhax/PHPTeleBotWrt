@@ -158,40 +158,60 @@ PHPTeleBotWrt/
 
 ### `phpbotmgr` Command Usage
 
-The `phpbotmgr` script is used to install, update, and manage the bot's lifecycle on your router.
+The `phpbotmgr` script is a comprehensive management tool for the bot's lifecycle on your router.
 
 | Command | Action | Description |
 | :--- | :--- | :--- |
-| `./phpbotmgr i` | **Install** | Installs required OpenWRT packages (`php8-cli`, `curl`, `git`, etc.) and initializes the setup. |
-| `./phpbotmgr u` | **Update** | Updates the bot binaries and core files to the latest version. |
-| `./phpbotmgr a` | **Auto-start** | Toggles the bot's presence in `/etc/rc.local` to start automatically on boot. |
-| `./phpbotmgr t` | **Cron Job** | Toggles a scheduled task in root crontab to ensure the bot restarts every 4 minutes. |
-| `./phpbotmgr r` | **Run** | Starts the bot manually in the foreground. |
+| `./phpbotmgr i` | **Install** | Installs all required OpenWRT packages, clones the repo, and sets up `databot` configuration. |
+| `./phpbotmgr u` | **Update** | Backs up your config, pulls the latest changes from GitHub, and updates the manager itself. |
+| `./phpbotmgr e` | **Edit Config** | Interactively update your Bot Token, Username, or Personal UID in the `databot` file. |
+| `./phpbotmgr r` | **Run** | Starts the bot using `nohup` and `screen` for background execution. |
+| `./phpbotmgr s` | **Stop** | Kills all running PHP processes associated with the bot. |
+| `./phpbotmgr c` | **Check Status** | Checks if the bot process is currently running. |
+| `./phpbotmgr a` | **Auto-start** | Toggles the bot's presence in `/etc/rc.local` (starts on boot). |
+| `./phpbotmgr t` | **Cron Job** | Toggles a scheduled task in root crontab (restarts every 4 mins). |
+| `./phpbotmgr ra` | **Uninstall All** | Removes the bot and all associated configuration data. |
+| `./phpbotmgr rx` | **Uninstall App** | Removes the bot but keeps a backup of your `databot` configuration. |
 
-**Quick Start Example:**
+### Quick Start Workflow
+
 ```bash
+# 1. Make it executable
 chmod +x phpbotmgr
-./phpbotmgr i # Install
-./phpbotmgr a # Enable Boot Start
-./phpbotmgr t # Enable Cron Restart
-```
 
-### Auto-Start Options
-(Controlled via `phpbotmgr` as listed above)
+# 2. Install (packages + repo + setup)
+./phpbotmgr i
 
-**rc.local (Boot):**
-```bash
+# 3. Enable Auto-Start on Boot (rc.local)
 ./phpbotmgr a
-```
 
-**Cron Job (Scheduled):**
-```bash
+# 4. Enable Scheduled Restart (Cron - every 4 mins)
 ./phpbotmgr t
+
+# 5. Start the bot now
+./phpbotmgr r
+
+# 6. Check if it's running
+./phpbotmgr c
 ```
 
-### Update
+### Other Common Operations
+
 ```bash
+# Stop the bot
+./phpbotmgr s
+
+# Update to latest version
 ./phpbotmgr u
+
+# Edit Bot Token / Username / UID
+./phpbotmgr e
+
+# Full uninstall (removes everything including config)
+./phpbotmgr ra
+
+# Uninstall but keep databot backup
+./phpbotmgr rx
 ```
 
 ## 📖 Documentation
