@@ -651,8 +651,19 @@ $bot->cmd("/myxl", function ($number) {
     if (empty($number)) {
         Bot::sendMessage(
             $GLOBALS["banner"] . "\n" .
-            "Usage: <code>/myxl 087812345678</code>\n" .
-            "Please provide your XL number."
+            "📱 <b>XL Package Checker</b>\n\n" .
+            "ℹ️ This command allows you to check your XL (Axis) number\'s package info including remaining quota, expiry dates, and subscriber details.\n\n" .
+            "<b>Usage:</b>\n" .
+            "<code>/myxl 087812345678</code>\n\n" .
+            "<b>Supported Number Formats:</b>\n" .
+            "↳ With country code: <code>6287812345678</code>\n" .
+            "↳ Without code: <code>087812345678</code>\n\n" .
+            "<b>Example:</b>\n" .
+            "↳ <code>/myxl 087780267559</code>\n" .
+            "↳ <code>/myxl 6287780267559</code>\n\n" .
+            "<b>Note:</b>\n" .
+            "↳ Only supports XL and Axis numbers.\n" .
+            "↳ Make sure the number is active."
             ,$GLOBALS["options"]);
     } else {
         Bot::sendMessage(
@@ -660,7 +671,7 @@ $bot->cmd("/myxl", function ($number) {
             "Checking XL package for <code>$number</code>..."
             ,$GLOBALS["options"]);
         Bot::sendMessage(
-            "<code>" . MyXL($number) . "</code>"
+            MyXL($number)
             ,$GLOBALS["options"]);
     }
 });
