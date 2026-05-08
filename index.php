@@ -13,19 +13,25 @@ function readToken($input)
     return $input == "token" ? $raw[0] : $raw[1];
 }
 
+// Async Background Execution Helper
+function async_exec($command, $startMessage, $chatId, $token) {
+    $escapedCmd = escapeshellcmd($command);
+    $startMsgEscaped = escapeshellarg($startMessage);
+    
+    // Launch the async helper script in the background.
+    // The script handles sending the start message and the final result.
+    shell_exec(
+        "php " . __DIR__ . "/src/async_exec.php " .
+        escapeshellarg($escapedCmd) . " " .
+        escapeshellarg($chatId) . " " .
+        escapeshellarg($token) . " " .
+        $startMsgEscaped .
+        " >/dev/null 2>&1 &"
+    );
+}
+
 // token user
 $bot = new PHPTelebot(readToken("token"), readToken("username"));
-
-// random messages
-$ads = [
-		"<span class='tg-spoiler'>Donate me: <a href='https://helmiau.com/pay'>https://helmiau.com/pay</a>.</span>",
-		"<span class='tg-spoiler'>Keep PHPTeleBotWrt up-to-date with <code>phpmgrbot u</code> command in Terminal or through /botup command in telegram bot chat.</span>",
-		"<span class='tg-spoiler'>Read PHPTeleBotWrt wiki and information <a href='https://www.helmiau.com/blog/phptelebotwrt'>here</a>.</span>",
-		"<span class='tg-spoiler'>PHPTeleBotWrt devs: <a href='https://github.com/radyakaze/phptelebot'>radyakaze</a>, <a href='https://github.com/OppaiCyber/XppaiWRT'>OppaiCyber-XppaiWRT</a>, <a href='https://github.com/xentolopx/eXppaiWRT'>xentolopx-eXppaiWRT</a> and <a href='https://helmiau.com/pay'>Helmi Amirudin</a>.</span>",
-		"<span class='tg-spoiler'>Make sure your device always connected to network.</span>",
-        
-    ];
-$randAds = $ads[array_rand($ads)];
 
 // Ping Command
 $bot->cmd("/ping", function () {
@@ -36,7 +42,7 @@ $bot->cmd("/ping", function () {
     Bot::sendMessage(
 		$GLOBALS["banner"] . "\n" .
 		"Ping time taken: " . $diff . "ms"
-		. "\n\n" . $GLOBALS["randAds"]
+		. "\n\n" 
 		,$GLOBALS["options"]);
 });
 
@@ -44,8 +50,8 @@ $bot->cmd("/ping", function () {
 $bot->cmd("/start", function () {
     Bot::sendMessage(
 		$GLOBALS["banner"] . "\n" .
-		"Welcome to PHPTeleBotWrt!\nRun /cmdlist to see all available comands.\n\n Source: https://github.com/helmiau/PHPTeleBotWrt"
-		. "\n\n" . $GLOBALS["randAds"]
+		"Welcome to PHPTeleBotWrt!\nRun /cmdlist to see all available comands."
+		. "\n\n" 
 		,$GLOBALS["options"]);
 });
 
@@ -129,7 +135,7 @@ $bot->cmd("/cmdlist", function () {
  ↳*-You can check multiple [ADB_ID] by writing like [\"adbid001 adbid002 adbid003\"] with double quotes.
  ↳*-[DELAY] is a delay (seconds) between disabling and re-enabling airplane mode for network restart."
  
-		. "\n\n" . $GLOBALS["randAds"]
+		. "\n\n" 
 		,$GLOBALS["options"]);
 	unset($boot_stat);
 	unset($cron_stat);
@@ -169,7 +175,7 @@ $bot->cmd("/ul", function ($filedir) {
 	Bot::sendMessage(
 		$GLOBALS["banner"] . "\n" .
 		"$pesan_upf"
-		. "\n\n" . $GLOBALS["randAds"]
+		. "\n\n" 
 		,$GLOBALS["options"]);
 	
 	unset($token);
@@ -193,7 +199,7 @@ $bot->cmd("/dl", function ($filedir) {
 		Bot::sendMessage(
 			$GLOBALS["banner"] . "\n" .
 			"File <code>$filedir</code> retrieved successfully!.\n\nFile <code>$filedir</code> telah diterima."
-			. "\n\n" . $GLOBALS["randAds"]
+			. "\n\n" 
 			,$GLOBALS["options"]);
 	} else {
 		Bot::sendMessage(
@@ -212,7 +218,7 @@ $bot->cmd("/cp", function ($cpold, $cpnew) {
 		Bot::sendMessage(
 			$GLOBALS["banner"] . "\n" .
 			"File <code>$cpold</code> copied to <code>$cpnew</code>!.\nFile <code>$cpold</code> telah dipindah ke <code>$cpnew</code>!."
-			. "\n\n" . $GLOBALS["randAds"]
+			. "\n\n" 
 			,$GLOBALS["options"]);
     } else {
 		Bot::sendMessage(
@@ -230,7 +236,7 @@ $bot->cmd("/mv", function ($mvold, $mvnew) {
 		Bot::sendMessage(
 			$GLOBALS["banner"] . "\n" .
 			"File <code>$mvold</code> moved to <code>$mvnew</code>!.\nFile <code>$mvold</code> telah dipindah ke <code>$mvnew</code>!."
-			. "\n\n" . $GLOBALS["randAds"]
+			. "\n\n" 
 			,$GLOBALS["options"]);
     } else {
 		Bot::sendMessage(
@@ -248,7 +254,7 @@ $bot->cmd("/rm", function ($rmfile) {
 		Bot::sendMessage(
 			$GLOBALS["banner"] . "\n" .
 			"File <code>$rmfile</code> deleted!.\nFile <code>$rmfile</code> telah dihapus!."
-			. "\n\n" . $GLOBALS["randAds"]
+			. "\n\n" 
 			,$GLOBALS["options"]);
     } else {
 		Bot::sendMessage(
@@ -284,7 +290,7 @@ $bot->cmd("/rs", function ($app = 'ls') {
 			$GLOBALS["banner"] . "\n" .
 			"Restarting <code>" . $app . "</code>..." . "\n\n" .
 			"Run <code>/rs ls</code> to see listed supported apps"
-			. "\n\n" . $GLOBALS["randAds"]
+			. "\n\n" 
 			,$GLOBALS["options"]);
 		unset($grepST);
     }
@@ -303,11 +309,6 @@ $bot->cmd("/sh", function ($bashXmd) {
 	Bot::sendMessage(
 		"<code>" . $runsh ."</code>"
 		,$GLOBALS["options"]);
-	Bot::sendMessage(
-		$GLOBALS["randAds"]
-		,$GLOBALS["options"]);
-
-	$rmrunsh = shell_exec("rm rpbXz && rm $tzX");
 });
 
 
@@ -317,7 +318,7 @@ $bot->cmd("/ocpr", function () {
     Bot::sendMessage(
 		$GLOBALS["banner"] . "\n" .
 		"<code>" . OpenClashProxies() . "</code>"
-		. "\n\n" . $GLOBALS["randAds"]
+		. "\n\n" 
 		,$GLOBALS["options"]);
 });
 
@@ -330,7 +331,7 @@ $bot->cmd("/ocst", function () {
 		$GLOBALS["banner"] . "\n" .
 		"<code>" . shell_exec("uci set openclash.config.enable=1 && uci commit openclash && /etc/init.d/openclash restart >/dev/null 2>&1 &") . "</code>"
 		. "Openclash started successfully!."
-		. "\n\n" . $GLOBALS["randAds"]
+		. "\n\n" 
         ,$GLOBALS["options"]);
 });
 
@@ -343,79 +344,73 @@ $bot->cmd("/ocsp", function () {
 		$GLOBALS["banner"] . "\n" .
 		"<code>" . shell_exec("uci set openclash.config.enable=0 && uci commit openclash && /etc/init.d/openclash stop >/dev/null 2>&1 &") . "</code>"
 		. "Openclash stopped successfully!."
-		. "\n\n" . $GLOBALS["randAds"]
+		. "\n\n" 
         ,$GLOBALS["options"]);
 });
 
 // OpenClash Update
 $bot->cmd("/ocup", function () {
+    $message = Bot::message();
+    $chatId = $message['chat']['id'];
+    $token = readToken("token");
+
     $ocver = shell_exec("echo -e $(opkg status luci-app-openclash 2>/dev/null |grep 'Version' | awk -F 'Version: ' '{print$2}')");
-	Bot::sendMessage(
-		"Checking Openclash version update ... "
-        ,$GLOBALS["options"]);
+
     Bot::sendMessage(
-		"<code>" . shell_exec("/usr/share/openclash/openclash_update.sh") . "</code>"
+        $GLOBALS["banner"] . "\n" .
+        "Checking OpenClash version update...\nCurrent: $ocver\n\n" .
+        "Starting update in background... You will be notified upon completion."
         ,$GLOBALS["options"]);
-    $ocver2 = shell_exec("echo -e $(opkg status luci-app-openclash 2>/dev/null |grep 'Version' | awk -F 'Version: ' '{print$2}')");
-	if ($ocver2 === $ocver) {
-		$ocupinfo = "Openclash is already at latest version";
-	} else {
-		$ocupinfo = "Openclash updated to $ocver2";
-	}
-    Bot::sendMessage(
-		$GLOBALS["banner"] . "\n" .
-		"$ocupinfo"
-		. "\n\n" . $GLOBALS["randAds"]
-        ,$GLOBALS["options"]);
+
+    async_exec(
+        "/usr/share/openclash/openclash_update.sh && opkg status luci-app-openclash 2>/dev/null | grep 'Version' | awk -F 'Version: ' '{print \$2}'",
+        "OpenClash update is running...",
+        $chatId,
+        $token
+    );
 });
 
 // OpenClash Update All core
 $bot->cmd("/ocua", function () {
-	$oc_app_old = shell_exec("echo -e $(opkg status luci-app-openclash 2>/dev/null |grep 'Version' | awk -F 'Version: ' '{print$2}')");
-	$core_old = shell_exec("echo -e $(/etc/openclash/core/clash -v 2>/dev/null |awk -F ' ' '{print $2}' 2>/dev/null)");
-	$core_tun_old = shell_exec("echo -e $(/etc/openclash/core/clash_tun -v 2>/dev/null |awk -F ' ' '{print $2}' 2>/dev/null)");
-	$core_meta_old = shell_exec("echo -e $(/etc/openclash/core/clash_meta -v 2>/dev/null |awk -F ' ' '{print $3}' 2>/dev/null)");
-	
-	Bot::sendMessage(
-		"Checking Openclash and cores version update ... "
-        ,$GLOBALS["options"]);
+    $message = Bot::message();
+    $chatId = $message['chat']['id'];
+    $token = readToken("token");
+
+    $oc_app_old = shell_exec("echo -e $(opkg status luci-app-openclash 2>/dev/null |grep 'Version' | awk -F 'Version: ' '{print$2}')");
+    $core_old = shell_exec("echo -e $(/etc/openclash/core/clash -v 2>/dev/null |awk -F ' ' '{print $2}' 2>/dev/null)");
+    $core_tun_old = shell_exec("echo -e $(/etc/openclash/core/clash_tun -v 2>/dev/null |awk -F ' ' '{print $2}' 2>/dev/null)");
+    $core_meta_old = shell_exec("echo -e $(/etc/openclash/core/clash_meta -v 2>/dev/null |awk -F ' ' '{print $3}' 2>/dev/null)");
+
     Bot::sendMessage(
-		"<code>" . shell_exec("sh /usr/share/openclash/openclash_update.sh 'one_key_update' >/dev/null 2>&1 &") . "</code>"
+        $GLOBALS["banner"] . "\n" .
+        "Checking OpenClash and cores version update...\n\n" .
+        "Current versions:\n" .
+        "App: $oc_app_old\nDev Core: $core_old\nTUN Core: $core_tun_old\nMeta Core: $core_meta_old\n\n" .
+        "Starting update in background... You will be notified upon completion."
         ,$GLOBALS["options"]);
 
-	$oc_app_new = shell_exec("echo -e $(opkg status luci-app-openclash 2>/dev/null |grep 'Version' | awk -F 'Version: ' '{print$2}')");
-	$core_new = shell_exec("echo -e $(/etc/openclash/core/clash -v 2>/dev/null |awk -F ' ' '{print $2}' 2>/dev/null)");
-	$core_tun_new = shell_exec("echo -e $(/etc/openclash/core/clash_tun -v 2>/dev/null |awk -F ' ' '{print $2}' 2>/dev/null)");
-	$core_meta_new = shell_exec("echo -e $(/etc/openclash/core/clash_meta -v 2>/dev/null |awk -F ' ' '{print $3}' 2>/dev/null)");
+    shell_exec("sh /usr/share/openclash/openclash_update.sh 'one_key_update' >/dev/null 2>&1 &");
 
-	if ($oc_app_new === $oc_app_old) {
-		$oc_app_info = "Openclash App is already at latest version";
-	} else {
-		$oc_app_info = "Openclash updated to $oc_app_new";
-	}
-	if ($core_new === $core_old) {
-		$core_new_info = "Dev core is already at latest version";
-	} else {
-		$core_new_info = "Dev core updated to $core_new";
-	}
-	if ($core_tun_new === $core_tun_old) {
-		$core_tun_info = "TUN core is already at latest version";
-	} else {
-		$core_tun_info = "TUN core updated to $core_tun_new";
-	}
-	if ($core_meta_new === $core_meta_old) {
-		$core_meta_info = "Meta core is already at latest version";
-	} else {
-		$core_meta_info = "Meta core updated to $core_meta_new";
-	}
-    Bot::sendMessage(
-		$GLOBALS["banner"] . "\n" .
-		"$oc_app_info" . "\n" .
-		"$core_new_info" . "\n" .
-		"$core_tun_info" . "\n" .
-		"$core_meta_info"
-		. "\n\n" . $GLOBALS["randAds"]
-        ,$GLOBALS["options"]);
+    $completionScript = '/tmp/ocua_complete.sh';
+    $scriptContent = "#!/bin/bash\n";
+    $scriptContent .= "sleep 60\n";
+    $scriptContent .= "oc_app_new=$(opkg status luci-app-openclash 2>/dev/null | grep 'Version' | awk -F 'Version: ' '{print \$2}')\n";
+    $scriptContent .= "core_new=$(/etc/openclash/core/clash -v 2>/dev/null | awk -F ' ' '{print \$2}' 2>/dev/null)\n";
+    $scriptContent .= "core_tun_new=$(/etc/openclash/core/clash_tun -v 2>/dev/null | awk -F ' ' '{print \$2}' 2>/dev/null)\n";
+    $scriptContent .= "core_meta_new=$(/etc/openclash/core/clash_meta -v 2>/dev/null | awk -F ' ' '{print \$3}' 2>/dev/null)\n";
+    $scriptContent .= "oc_app_info=\"OpenClash App is already at latest version\"\n";
+    $scriptContent .= "[ \"\$oc_app_new\" != \"$oc_app_old\" ] && oc_app_info=\"OpenClash updated to \$oc_app_new\"\n";
+    $scriptContent .= "core_new_info=\"Dev core is already at latest version\"\n";
+    $scriptContent .= "[ \"\$core_new\" != \"$core_old\" ] && core_new_info=\"Dev core updated to \$core_new\"\n";
+    $scriptContent .= "core_tun_info=\"TUN core is already at latest version\"\n";
+    $scriptContent .= "[ \"\$core_tun_new\" != \"$core_tun_old\" ] && core_tun_info=\"TUN core updated to \$core_tun_new\"\n";
+    $scriptContent .= "core_meta_info=\"Meta core is already at latest version\"\n";
+    $scriptContent .= "[ \"\$core_meta_new\" != \"$core_meta_old\" ] && core_meta_info=\"Meta core updated to \$core_meta_new\"\n";
+    $scriptContent .= "curl -s -X POST \"https://api.telegram.org/bot$token/sendMessage\" \\\n    -d \"chat_id=$chatId\" \\\n    -d \"text=<b>PHPTeleBotWrt</b>\\n\\n<b>OpenClash Update Complete!</b>\\n\\n\$oc_app_info\\n\$core_new_info\\n\$core_tun_info\\n\$core_meta_info\" \\\n    -d \"parse_mode=html\"\n";
+    $scriptContent .= "rm \$0\n";
+
+    file_put_contents($completionScript, $scriptContent);
+    shell_exec("chmod +x $completionScript && bash $completionScript >/dev/null 2>&1 &");
 });
 
 // vnstat
@@ -426,13 +421,13 @@ $bot->cmd("/vnstat", function ($input) {
         Bot::sendMessage(
 			$GLOBALS["banner"] . "\n" .
 			"Invalid input or vnstat not found"
-			. "\n" . $GLOBALS["randAds"]
+			. "\n" 
 			,$GLOBALS["options"]);
     } else {
         Bot::sendMessage(
 			$GLOBALS["banner"] . "\n" .
 			"<code>" . $output . "</code>"
-			. "\n" . $GLOBALS["randAds"]
+			. "\n" 
 			,$GLOBALS["options"]);
     }
 });
@@ -441,7 +436,6 @@ $bot->cmd("/vnstat", function ($input) {
 $bot->cmd("/vnstati", function () {
     Bot::sendMessage(
 		$GLOBALS["banner"] . "\n" 
-		. $GLOBALS["randAds"]
 		,$GLOBALS["options"]);
 
     $image_files = [
@@ -480,7 +474,7 @@ $bot->cmd("/memory", function () {
         "<code>Memory usage: \nBar: " .
         $bar .
         "\nUsed: $used MB \nAvailable: $free MB \nTotal: $total MB \nUsage: $percent%</code>"
-		. "\n\n" . $GLOBALS["randAds"];
+		. "\n\n" ;
     Bot::sendMessage($output, $GLOBALS["options"]);
 });
 
@@ -489,7 +483,7 @@ $bot->cmd("/sysinfo", function () {
     Bot::sendMessage(
 		$GLOBALS["banner"] . "\n" .
         "<code>" . shell_exec("src/plugins/sysinfo.sh -bw") . "</code>"
-		. "\n\n" . $GLOBALS["randAds"]
+		. "\n\n" 
         ,$GLOBALS["options"]);
 });
 
@@ -499,7 +493,7 @@ $bot->cmd("/reboot", function () {
 		$GLOBALS["banner"] . "\n" .
         "Rebooting Openwrt..." .
         "<code>" . shell_exec("reboot") . "</code>"
-		. "\n\n" . $GLOBALS["randAds"]
+		. "\n\n" 
         ,$GLOBALS["options"]);
 });
 
@@ -509,7 +503,7 @@ $bot->cmd("/turnoff", function () {
 		$GLOBALS["banner"] . "\n" .
         "Turning off Openwrt..." .
         "<code>" . shell_exec("halt && reboot -p") . "</code>"
-		. "\n\n" . $GLOBALS["randAds"]
+		. "\n\n" 
         ,$GLOBALS["options"]);
 });
 
@@ -518,7 +512,7 @@ $bot->cmd("/netcl", function () {
     Bot::sendMessage(
 		$GLOBALS["banner"] . "\n" .
         shell_exec("src/plugins/netcl.sh")
-		. "\n\n" . $GLOBALS["randAds"]
+		. "\n\n" 
         ,$GLOBALS["options"]);
 });
 
@@ -527,7 +521,7 @@ $bot->cmd("/fwlist", function () {
     Bot::sendMessage(
 		$GLOBALS["banner"] . "\n" .
         "<code>" . shell_exec("src/plugins/fwlist.sh") . "</code>"
-		. "\n\n" . $GLOBALS["randAds"]
+		. "\n\n" 
         ,$GLOBALS["options"]);
 });
 
@@ -544,7 +538,7 @@ $bot->cmd("/ifcfg", function ($iface) {
     Bot::sendMessage(
 		$GLOBALS["banner"] . "\n" .
         "<code>$pesan_ifcfg\n\n$ex_ifcfg</code>"
-		. "\n\n" . $GLOBALS["randAds"]
+		. "\n\n" 
         ,$GLOBALS["options"]);
 });
 
@@ -553,7 +547,7 @@ $bot->cmd("/oc", function () {
     Bot::sendMessage(
 		$GLOBALS["banner"] . "\n" .
         "<code>" . shell_exec("src/plugins/oc.sh") . "</code>"
-		. "\n\n" . $GLOBALS["randAds"]
+		. "\n\n" 
         ,$GLOBALS["options"]);
 });
 
@@ -562,7 +556,7 @@ $bot->cmd("/myip", function () {
     Bot::sendMessage(
 		$GLOBALS["banner"] . "\n" .
         "<code>" . myip() . "</code>"
-		. "\n\n" . $GLOBALS["randAds"]
+		. "\n\n" 
         ,$GLOBALS["options"]);
 });
 
@@ -571,19 +565,27 @@ $bot->cmd("/ocrl", function () {
     Bot::sendMessage(
 		$GLOBALS["banner"] . "\n" .
 		"<code>" . OpenClashRules() . "</code>"
-		. "\n" . $GLOBALS["randAds"]
+		. "\n" 
         ,$GLOBALS["options"]);
 });
 
 // Speedtest
 $bot->cmd("/speedtest", function () {
-    Bot::sendMessage("Speedtest on Progress... Please wait..", $GLOBALS["options"]);
+    $message = Bot::message();
+    $chatId = $message['chat']['id'];
+    $token = readToken("token");
+    
     Bot::sendMessage(
-		$GLOBALS["banner"] .
-		"<code>" . Speedtest() . "</code>"
-		. "\n" . $GLOBALS["randAds"]
+        $GLOBALS["banner"] . "\n" .
+        "Speedtest started in background. You will receive the result shortly..."
         ,$GLOBALS["options"]);
-	$rmstrXq = shell_exec("rm result_SpeedTST");
+    
+    async_exec(
+        "speedtest > result_SpeedTST && cat result_SpeedTST && rm result_SpeedTST",
+        "Speedtest is running...",
+        $chatId,
+        $token
+    );
 });
 
 //adb cmd
@@ -592,7 +594,7 @@ $bot->cmd("/adb_old", function () {
     Bot::sendMessage(
 		$GLOBALS["banner"] . "\n" .
 		"<code>" . ADB() . "</code>"
-		. "\n\n" . $GLOBALS["randAds"]
+		. "\n\n" 
         ,$GLOBALS["options"]);
 });
 
@@ -601,7 +603,7 @@ $bot->cmd("/adb", function ($adbcmd1) {
     Bot::sendMessage(
 		$GLOBALS["banner"] . "\n" .
         "<code>" . shell_exec("adb $adbcmd1") . "</code>"
-		. "\n\n" . $GLOBALS["randAds"]
+		. "\n\n" 
         ,$GLOBALS["options"]);
 });
 
@@ -609,7 +611,7 @@ $bot->cmd("/adbdev", function ($adbcmd2) {
     Bot::sendMessage(
 		$GLOBALS["banner"] . "\n" .
         "<code>" . shell_exec("adb devices") . "</code>"
-		. "\n\n" . $GLOBALS["randAds"]
+		. "\n\n" 
         ,$GLOBALS["options"]);
 });
 //$runsh = shell_exec("./$tzX > rpbXz && cat rpbXz");
@@ -617,7 +619,7 @@ $bot->cmd("/adbinfo", function ($adbcmd3) {
     Bot::sendMessage(
 		$GLOBALS["banner"] . "\n" .
         "<code>" . shell_exec("src/plugins/adb-deviceinfo.sh $adbcmd3 > tmpadbinfo && cat tmpadbinfo") . "</code>"
-		. "\n\n" . $GLOBALS["randAds"]
+		. "\n\n" 
         ,$GLOBALS["options"]);
 	$rmrunsh = shell_exec("rm tmpadbinfo");
 });
@@ -626,7 +628,7 @@ $bot->cmd("/adbsms", function ($adbcmd4) {
     Bot::sendMessage(
 		$GLOBALS["banner"] . "\n" .
         "<code>" . shell_exec("src/plugins/adb-sms.sh $adbcmd4  > tmpadbsms && cat tmpadbsms") . "</code>"
-		. "\n\n" . $GLOBALS["randAds"]
+		. "\n\n" 
         ,$GLOBALS["options"]);
 	$rmrunsh = shell_exec("rm tmpadbsms");
 });
@@ -635,7 +637,7 @@ $bot->cmd("/adbrestnet", function ($adbcmd5, $adbcmd6, $adbcmd7, $adbcmd8, $adbc
     Bot::sendMessage(
 		$GLOBALS["banner"] . "\n" .
         "<code>" . shell_exec("src/plugins/adb-refresh-network.sh \"$adbcmd5\" $adbcmd6 $adbcmd7 $adbcmd8 $adbcmd9 > tmpadbrestnet && cat tmpadbrestnet") . "</code>"
-		. "\n\n" . $GLOBALS["randAds"]
+		. "\n\n" 
         ,$GLOBALS["options"]);
 	$rmrunsh = shell_exec("rm tmpadbrestnet");
 });
@@ -645,7 +647,7 @@ $bot->cmd("/aria2add", function ($url) {
     Bot::sendMessage(
 		$GLOBALS["banner"] . "\n" .
         "<code>" . shell_exec("src/plugins/add.sh $url") . "</code>"
-		. "\n\n" . $GLOBALS["randAds"]
+		. "\n\n" 
         ,$GLOBALS["options"]);
 });
 
@@ -653,7 +655,7 @@ $bot->cmd("/aria2stats", function () {
     Bot::sendMessage(
 		$GLOBALS["banner"] . "\n" .
         "<code>" . shell_exec("src/plugins/stats.sh") . "</code>"
-		. "\n\n" . $GLOBALS["randAds"]
+		. "\n\n" 
         ,$GLOBALS["options"]);
 });
 
@@ -661,7 +663,7 @@ $bot->cmd("/aria2pause", function () {
     Bot::sendMessage(
 		$GLOBALS["banner"] . "\n" .
         "<code>" . shell_exec("src/plugins/pause.sh") . "</code>"
-		. "\n\n" . $GLOBALS["randAds"]
+		. "\n\n" 
         ,$GLOBALS["options"]);
 });
 
@@ -669,7 +671,7 @@ $bot->cmd("/aria2resume", function () {
     Bot::sendMessage(
 		$GLOBALS["banner"] . "\n" .
         "<code>" . shell_exec("src/plugins/resume.sh") . "</code>"
-		. "\n\n" . $GLOBALS["randAds"]
+		. "\n\n" 
         ,$GLOBALS["options"]);
 });
 
@@ -686,7 +688,7 @@ $bot->cmd("/botup", function () {
     Bot::sendMessage(
 		$GLOBALS["banner"] . "\n" .
 		"PHPTeleBotWrt updated..."
-		. "\n\n" . $GLOBALS["randAds"]
+		. "\n\n" 
         ,$GLOBALS["options"]);
 });
 
@@ -710,7 +712,7 @@ $bot->cmd("/botas", function () {
     Bot::sendMessage(
 		$GLOBALS["banner"] . "\n" .
 		"PHPTeleBotWrt auto start $boot_stat2..."
-		. "\n\n" . $GLOBALS["randAds"]
+		. "\n\n" 
         ,$GLOBALS["options"]);
 		
 	unset($boot_stat1);
@@ -737,7 +739,7 @@ $bot->cmd("/botcr", function () {
     Bot::sendMessage(
 		$GLOBALS["banner"] . "\n" .
 		"PHPTeleBotWrt cronjob scheduled task $cron_stat2..."
-		. "\n\n" . $GLOBALS["randAds"]
+		. "\n\n" 
         ,$GLOBALS["options"]);
 
 	unset($cron_stat1);

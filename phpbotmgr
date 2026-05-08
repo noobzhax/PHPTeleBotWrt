@@ -1,9 +1,6 @@
 #!/bin/bash
 # PHPTeleBotWrt Manager (Installer, Updater, Uninstaller)
-#--------------------------------------------------------
-# Script by Helmi Amirudin <helmiau.com>
-# If you use some codes frome here, please give credit to www.helmiau.com
-#--------------------------------------------------------
+#
 SCNM="$(basename "$0")"
 INSDIR="/root/PHPTeleBotWrt" # Install directory
 TLNAME="PHPTeleBotWrt"
