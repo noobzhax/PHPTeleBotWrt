@@ -42,7 +42,7 @@ bootX () {
 		sed -i 's#exit 0##g' /etc/rc.local
 		cat << 'EOF' >> /etc/rc.local
 #PHPTeleBotWrt-Start
-cd /root/PHPTeleBotWrt && if [[ $(ls {/bin,/usr/bin,/usr/sbin} | grep -c "^php8-cli") > 0 && $(ps aux | grep -c "PHPTeleBotWrt") < 2 ]];then php8-cli index.php &>dev/null;else php-cli index.php &>dev/null; fi
+cd /root/PHPTeleBotWrt && if [[ $(ls {/bin,/usr/bin,/usr/sbin} | grep -c "^php8-cli") > 0 && $(ps aux | grep -c "PHPTeleBotWrt") < 2 ]];then php8-cli index.php &>/dev/null;else php-cli index.php &>/dev/null; fi
 #PHPTeleBotWrt-End
 
 exit 0
