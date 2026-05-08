@@ -33,13 +33,18 @@ class Bot
      */
     public static function send($action = 'sendMessage', $data = [])
     {
+        // 'reply' is an internal key used by the bot to auto-reply to messages.
+        // We save its value here and remove it before sending to the Telegram API.
+        $hasReply = isset($data['reply']) && $data['reply'] === true;
+        unset($data['reply']);
+        
         $upload = false;
         $actionUpload = ['sendPhoto', 'sendAudio', 'sendDocument', 'sendSticker', 'sendVideo', 'sendVoice'];
 
         if (in_array($action, $actionUpload)) {
             $field = str_replace('send', '', strtolower($action));
 
-            if (is_file($data[$field])) {
+            if (isset($data[$field]) && is_file($data[$field])) {
                 $upload = true;
                 $data[$field] = self::curlFile($data[$field]);
             }
@@ -52,10 +57,9 @@ class Bot
                 $getUpdates = $getUpdates['callback_query'];
             }
             $data['chat_id'] = $getUpdates['message']['chat']['id'];
-            // Reply message
-            if (!isset($data['reply_to_message_id']) && isset($data['reply']) && $data['reply'] === true) {
+            // Reply message — use the saved $hasReply value since 'reply' key was already unset
+            if (!isset($data['reply_to_message_id']) && $hasReply) {
                 $data['reply_to_message_id'] = $getUpdates['message']['message_id'];
-                unset($data['reply']);
             }
         }
 

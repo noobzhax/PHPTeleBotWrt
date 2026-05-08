@@ -3,7 +3,15 @@ require_once __DIR__ . "/src/PHPTelebot.php";
 require_once __DIR__ . "/src/xc.php";
 error_reporting(E_ALL); ini_set('display_errors', 1);
 $banner = "<b>PHPTeleBotWrt</b>";
-$options = ["parse_mode" => "html", "reply" => true];
+
+// Helper: get the standard bot options safely (always includes parse_mode)
+function getBotOptions() {
+    return ["parse_mode" => "html"];
+}
+
+// Global options used by all bot commands
+$GLOBALS["options"] = getBotOptions();
+$options = $GLOBALS["options"];
 
 // Read token & username
 function readToken($input)
@@ -808,11 +816,11 @@ $bot->on("inline", function ($cmd, $input) {
         ];
     }
 
-    $GLOBALS["options"] = [
+    $localOptions = [
         "cache_time" => 3600,
     ];
 
-    return Bot::answerInlineQuery($results, $GLOBALS["options"]);
+    return Bot::answerInlineQuery($results, $localOptions);
 });
 
 $bot->run();
