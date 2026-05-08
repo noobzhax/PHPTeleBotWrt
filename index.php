@@ -65,15 +65,15 @@ $bot->cmd("/start", function () {
 
 // list of commands
 $bot->cmd("/cmdlist", function () {
-    $check_cron_stat = shell_exec("grep -c 'PHPTeleBotWrt' '/etc/crontabs/root'");
-    if ($check_cron_stat === 0) {
+    $check_cron_stat = trim(shell_exec("grep -c 'PHPTeleBotWrt' '/etc/crontabs/root'"));
+    if ($check_cron_stat === '0') {
         $cron_stat = "NOT ACTIVE";
     } else {
         $cron_stat = "ACTIVE";
     }
 	unset($check_cron_stat);
-    $check_boot_stat = shell_exec("grep -c 'PHPTeleBotWrt' '/etc/rc.local'");
-    if ($check_boot_stat === 0) {
+    $check_boot_stat = trim(shell_exec("grep -c 'PHPTeleBotWrt' '/etc/rc.local'"));
+    if ($check_boot_stat === '0') {
         $boot_stat = "NOT ACTIVE";
     } else {
         $boot_stat = "ACTIVE";
@@ -116,7 +116,7 @@ $bot->cmd("/cmdlist", function () {
  ↳/sysinfo : System Information
  ↳/memory : Memory status 
  ↳/sh commandSample : Run custom command in bash terminal
- ↳/rs ls : List of compatible app restart
+ ↳/rs : List of compatible app restart
  ↳/rs appname : Restart app in init.d
  
 📁Power System
@@ -140,7 +140,7 @@ $bot->cmd("/cmdlist", function () {
  ↳/adbrestnet ADB_ID DELAY: Restart device network
  ↳/adbsms ADB_ID: Retrieve SMS from device ID
  ↳*-Replace [ADB_ID] with your device id, take from [adb devices] command.
- ↳*-You can check multiple [ADB_ID] by writing like ["adbid001 adbid002 adbid003"] with double quotes.
+ ↳*-You can check multiple [ADB_ID] by writing like [adbid001 adbid002 adbid003] with double quotes.
  ↳*-[DELAY] is a delay (seconds) between disabling and re-enabling airplane mode for network restart.
  
 📁XL Commands
@@ -235,15 +235,16 @@ $bot->cmd("/dl", function ($filedir) {
 
 //copy file cmd
 $bot->cmd("/cp", function ($cpold, $cpnew) {
-    $cpold = escapeshellarg($cpold);
-    $cpnew = escapeshellarg($cpnew);
     if (file_exists($cpold) && !file_exists($cpnew)) {
-		$copied = shell_exec("cp $cpold $cpnew");
+		$safe_cpold = escapeshellarg($cpold);
+		$safe_cpnew = escapeshellarg($cpnew);
+		$copied = shell_exec("cp $safe_cpold $safe_cpnew");
 		Bot::sendMessage(
 			$GLOBALS["banner"] . "\n" .
 			"File <code>$cpold</code> copied to <code>$cpnew</code>!.\nFile <code>$cpold</code> telah dipindah ke <code>$cpnew</code>!."
 			. "\n\n" 
 			,$GLOBALS["options"]);
+		unset($safe_cpold, $safe_cpnew);
     } else {
 		Bot::sendMessage(
 		"Please input correct command. Example: <code>/cp /oldfolder/file.txt /newfolder/file.txt</code>.\n Or file source/destination doesn't exists on the server.\n\nTulis perintah dengan benar. Contoh: <code>/cp /oldfolder/file.txt /newfolder/file.txt</code>\n Atau mungkin file asal/tujuan tidak ada di server."
@@ -255,15 +256,16 @@ $bot->cmd("/cp", function ($cpold, $cpnew) {
 
 //move file cmd
 $bot->cmd("/mv", function ($mvold, $mvnew) {
-    $mvold = escapeshellarg($mvold);
-    $mvnew = escapeshellarg($mvnew);
     if (file_exists($mvold) && !file_exists($mvnew)) {
-		$copied = shell_exec("cp $mvold $mvnew && rm -f $mvold");
+		$safe_mvold = escapeshellarg($mvold);
+		$safe_mvnew = escapeshellarg($mvnew);
+		$copied = shell_exec("cp $safe_mvold $safe_mvnew && rm -f $safe_mvold");
 		Bot::sendMessage(
 			$GLOBALS["banner"] . "\n" .
 			"File <code>$mvold</code> moved to <code>$mvnew</code>!.\nFile <code>$mvold</code> telah dipindah ke <code>$mvnew</code>!."
 			. "\n\n" 
 			,$GLOBALS["options"]);
+		unset($safe_mvold, $safe_mvnew);
     } else {
 		Bot::sendMessage(
 		"Please input correct command. Example: <code>/mv /oldfolder/file.txt /newfolder/file.txt</code>.\n Or file source/destination doesn't exists on the server.\n\nTulis perintah dengan benar. Contoh: <code>/mv /oldfolder/file.txt /newfolder/file.txt</code>\n Atau mungkin file asal/tujuan tidak ada di server."
@@ -275,14 +277,15 @@ $bot->cmd("/mv", function ($mvold, $mvnew) {
 
 //delete file cmd
 $bot->cmd("/rm", function ($rmfile) {
-    $rmfile = escapeshellarg($rmfile);
     if (file_exists($rmfile)) {
-		$copied = shell_exec("rm -f $rmfile");
+		$safe_rmfile = escapeshellarg($rmfile);
+		$copied = shell_exec("rm -f $safe_rmfile");
 		Bot::sendMessage(
 			$GLOBALS["banner"] . "\n" .
 			"File <code>$rmfile</code> deleted!.\nFile <code>$rmfile</code> telah dihapus!."
 			. "\n\n" 
 			,$GLOBALS["options"]);
+		unset($safe_rmfile);
     } else {
 		Bot::sendMessage(
 		"Please input correct command. Example: <code>/rm /folder/file.txt</code>.\n Or file source/destination doesn't exists on the server.\n\nTulis perintah dengan benar. Contoh: <code>/rm /folder/file.txt</code>\n Atau mungkin file asal/tujuan tidak ada di server."
@@ -292,11 +295,9 @@ $bot->cmd("/rm", function ($rmfile) {
 });
 
 //restart init file cmd
-$bot->cmd("/rs", function ($app = 'ls') {
-    $app = escapeshellarg($app);
+$bot->cmd("/rs", function ($app = '') {
     $appPath = "/etc/init.d/$app";
-	if ($app === 'ls' && !file_exists($appPath)) {
-		//$dtIX = shell_exec("ls -l /etc/init.d | awk '{print$9}'");
+	if (empty($app) || !file_exists($appPath)) {
 		$dtIX = shell_exec("src/plugins/getinitapp.sh > listInit && cat listInit");
 		Bot::sendMessage(
 			"This command allow you to restart an app listed below." . "\n" .
@@ -308,19 +309,22 @@ $bot->cmd("/rs", function ($app = 'ls') {
 			,$GLOBALS["options"]);
 		unset($dtIX);
     } else {
-		$grepST = shell_exec("grep -c restart " . escapeshellarg($appPath));
-		if ($grepST === 0) {
-			$rextat = shell_exec(escapeshellarg($appPath) . " start >/dev/null 2>&1 &");
+		$safe_app = escapeshellarg($app);
+		$safe_appPath = escapeshellarg($appPath);
+		$grepST = trim(shell_exec("grep -c restart " . $safe_appPath));
+		if ($grepST === '0') {
+			$rextat = shell_exec($safe_appPath . " start >/dev/null 2>&1 &");
 		} else {
-			$rextat = shell_exec(escapeshellarg($appPath) . " restart >/dev/null 2>&1 &");
+			$rextat = shell_exec($safe_appPath . " restart >/dev/null 2>&1 &");
 		}
 		Bot::sendMessage(
 			$GLOBALS["banner"] . "\n" .
 			"Restarting <code>" . $app . "</code>..." . "\n\n" .
-			"Run <code>/rs ls</code> to see listed supported apps"
+			"Run <code>/rs</code> to see listed supported apps"
 			. "\n\n" 
 			,$GLOBALS["options"]);
 		unset($grepST);
+		unset($safe_app, $safe_appPath);
     }
 });
 
@@ -763,8 +767,8 @@ $bot->cmd("/botup", function () {
 
 // phpbotmgr auto start
 $bot->cmd("/botas", function () {
-    $check_boot_stat = shell_exec("grep -c 'PHPTeleBotWrt' '/etc/rc.local'");
-    if ($check_boot_stat === 0) {
+    $check_boot_stat = trim(shell_exec("grep -c 'PHPTeleBotWrt' '/etc/rc.local'"));
+    if ($check_boot_stat === '0') {
         $boot_stat1 = "Activating";
         $boot_stat2 = "activated";
     } else {
@@ -790,8 +794,8 @@ $bot->cmd("/botas", function () {
 
 // phpbotmgr cron
 $bot->cmd("/botcr", function () {
-    $check_cron_stat = shell_exec("grep -c 'PHPTeleBotWrt' '/etc/crontabs/root'");
-    if ($check_cron_stat === 0) {
+    $check_cron_stat = trim(shell_exec("grep -c 'PHPTeleBotWrt' '/etc/crontabs/root'"));
+    if ($check_cron_stat === '0') {
         $cron_stat1 = "Activating";
         $cron_stat2 = "activated";
     } else {
@@ -818,20 +822,22 @@ $bot->cmd("/botcr", function () {
 //inline command
 $bot->on("inline", function ($cmd, $input) {
     if ($cmd == "proxies") {
+        $proxiesData = OpenClashProxies();
         $results[] = [
             "type" => "article",
             "id" => "unique_id1",
-            "title" => Proxies(),
+            "title" => "OpenClash Proxies",
             "parse_mode" => "html",
-            "message_text" => "<code>" . Proxies() . "</code>",
+            "message_text" => "<code>" . $proxiesData . "</code>",
         ];
     } elseif ($cmd == "rules") {
+        $rulesData = OpenClashRules();
         $results[] = [
             "type" => "article",
             "id" => "unique_id1",
-            "title" => Rules(),
+            "title" => "OpenClash Rules",
             "parse_mode" => "html",
-            "message_text" => "<code>" . Rules() . "</code>",
+            "message_text" => "<code>" . $rulesData . "</code>",
         ];
     } elseif ($cmd == "myxl") {
         $results[] = [
