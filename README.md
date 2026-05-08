@@ -134,7 +134,7 @@
 ssh root@192.168.1.1
 
 # Clone the repository
-git clone https://github.com/helmiau/PHPTeleBotWrt.git
+git clone https://github.com/noobzhax/PHPTeleBotWrt.git
 cd PHPTeleBotWrt
 
 # Run the installer
