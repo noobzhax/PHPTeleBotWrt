@@ -154,9 +154,30 @@ PHPTeleBotWrt/
 └── README.md
 ```
 
-## 🛠 Configuration
+## 🛠 Management & Configuration
+
+### `phpbotmgr` Command Usage
+
+The `phpbotmgr` script is used to install, update, and manage the bot's lifecycle on your router.
+
+| Command | Action | Description |
+| :--- | :--- | :--- |
+| `./phpbotmgr i` | **Install** | Installs required OpenWRT packages (`php8-cli`, `curl`, `git`, etc.) and initializes the setup. |
+| `./phpbotmgr u` | **Update** | Updates the bot binaries and core files to the latest version. |
+| `./phpbotmgr a` | **Auto-start** | Toggles the bot's presence in `/etc/rc.local` to start automatically on boot. |
+| `./phpbotmgr t` | **Cron Job** | Toggles a scheduled task in root crontab to ensure the bot restarts every 4 minutes. |
+| `./phpbotmgr r` | **Run** | Starts the bot manually in the foreground. |
+
+**Quick Start Example:**
+```bash
+chmod +x phpbotmgr
+./phpbotmgr i # Install
+./phpbotmgr a # Enable Boot Start
+./phpbotmgr t # Enable Cron Restart
+```
 
 ### Auto-Start Options
+(Controlled via `phpbotmgr` as listed above)
 
 **rc.local (Boot):**
 ```bash
