@@ -173,8 +173,10 @@ $bot->cmd("/ul", function ($filedir) {
     $fileId = $fileInfo['file_id'];
     $raw = json_decode(Bot::getFile($fileId),true);
     $file_server_path = $raw['result']['file_path'];
+    $safeFiledir = escapeshellarg($filedir);
+    $safeFileName = escapeshellarg($fileName);
 	if (!is_null($filePath) && is_dir($filedir) && isset($fileName) && isset($file_server_path)) {
-		$wget = shell_exec("wget -O \"$filedir/$fileName\" \"https://api.telegram.org/file/bot$token/$file_server_path\"");
+		$wget = shell_exec("wget -O $safeFiledir/$safeFileName \"https://api.telegram.org/file/bot$token/$file_server_path\"");
 		$pesan_upf = "File <code>$fileName</code> uploaded to <code>$filedir</code> successfully!." . "\n\n" .
 		"File <code>$fileName</code> berhasil diunggah ke folder <code>$filedir</code>!.";
 	} else {
@@ -201,13 +203,21 @@ $bot->cmd("/ul", function ($filedir) {
 });
 
 //download/retrieve file from openwrt cmd
-// curl -F document=@\"/filepath/filename\" \"https://api.telegram.org/bot5227493446:AAGN1BeLV0I_7KIAyq_4aE6BZfH_fXq9yGQ/sendDocument?chat_id=236082523\"
 $bot->cmd("/dl", function ($filedir) {
     $token = readToken("token");
     $message = Bot::message();
     $chat_dest = $message['from']['id'];
+    if (strpos($filedir, '..') !== false) {
+        Bot::sendMessage(
+		$GLOBALS["banner"] . "\n" .
+		"Access denied: Path traversal not allowed."
+		. "\n\n" 
+		,$GLOBALS["options"]);
+        return;
+    }
+    $safe_filedir = escapeshellarg($filedir);
 	if (file_exists($filedir)) {
-		$curled = shell_exec("curl -F document=@\"$filedir\" \"https://api.telegram.org/bot$token/sendDocument?chat_id=$chat_dest\"");
+		$curled = shell_exec("curl -F document=@$safe_filedir \"https://api.telegram.org/bot$token/sendDocument?chat_id=$chat_dest\"");
 		Bot::sendMessage(
 			$GLOBALS["banner"] . "\n" .
 			"File <code>$filedir</code> retrieved successfully!.\n\nFile <code>$filedir</code> telah diterima."
@@ -225,8 +235,10 @@ $bot->cmd("/dl", function ($filedir) {
 
 //copy file cmd
 $bot->cmd("/cp", function ($cpold, $cpnew) {
+    $cpold = escapeshellarg($cpold);
+    $cpnew = escapeshellarg($cpnew);
     if (file_exists($cpold) && !file_exists($cpnew)) {
-		$copied = shell_exec("cp \"$cpold\" \"$cpnew\"");
+		$copied = shell_exec("cp $cpold $cpnew");
 		Bot::sendMessage(
 			$GLOBALS["banner"] . "\n" .
 			"File <code>$cpold</code> copied to <code>$cpnew</code>!.\nFile <code>$cpold</code> telah dipindah ke <code>$cpnew</code>!."
@@ -243,8 +255,10 @@ $bot->cmd("/cp", function ($cpold, $cpnew) {
 
 //move file cmd
 $bot->cmd("/mv", function ($mvold, $mvnew) {
+    $mvold = escapeshellarg($mvold);
+    $mvnew = escapeshellarg($mvnew);
     if (file_exists($mvold) && !file_exists($mvnew)) {
-		$copied = shell_exec("cp \"$mvold\" \"$mvnew\" && rm -f \"$mvold\"");
+		$copied = shell_exec("cp $mvold $mvnew && rm -f $mvold");
 		Bot::sendMessage(
 			$GLOBALS["banner"] . "\n" .
 			"File <code>$mvold</code> moved to <code>$mvnew</code>!.\nFile <code>$mvold</code> telah dipindah ke <code>$mvnew</code>!."
@@ -261,8 +275,9 @@ $bot->cmd("/mv", function ($mvold, $mvnew) {
 
 //delete file cmd
 $bot->cmd("/rm", function ($rmfile) {
+    $rmfile = escapeshellarg($rmfile);
     if (file_exists($rmfile)) {
-		$copied = shell_exec("rm -f \"$rmfile\"");
+		$copied = shell_exec("rm -f $rmfile");
 		Bot::sendMessage(
 			$GLOBALS["banner"] . "\n" .
 			"File <code>$rmfile</code> deleted!.\nFile <code>$rmfile</code> telah dihapus!."
@@ -278,6 +293,7 @@ $bot->cmd("/rm", function ($rmfile) {
 
 //restart init file cmd
 $bot->cmd("/rs", function ($app = 'ls') {
+    $app = escapeshellarg($app);
     $appPath = "/etc/init.d/$app";
 	if ($app === 'ls' && !file_exists($appPath)) {
 		//$dtIX = shell_exec("ls -l /etc/init.d | awk '{print$9}'");
@@ -292,11 +308,11 @@ $bot->cmd("/rs", function ($app = 'ls') {
 			,$GLOBALS["options"]);
 		unset($dtIX);
     } else {
-		$grepST = shell_exec("grep -c restart $appPath");
+		$grepST = shell_exec("grep -c restart " . escapeshellarg($appPath));
 		if ($grepST === 0) {
-			$rextat = shell_exec("$appPath start >/dev/null 2>&1 &");
+			$rextat = shell_exec(escapeshellarg($appPath) . " start >/dev/null 2>&1 &");
 		} else {
-			$rextat = shell_exec("$appPath restart >/dev/null 2>&1 &");
+			$rextat = shell_exec(escapeshellarg($appPath) . " restart >/dev/null 2>&1 &");
 		}
 		Bot::sendMessage(
 			$GLOBALS["banner"] . "\n" .
@@ -311,7 +327,8 @@ $bot->cmd("/rs", function ($app = 'ls') {
 //bash cmd custom command terminal
 $bot->cmd("/sh", function ($bashXmd) {
 	$tzX = "sht.sh";
-	$crtFlX = shell_exec("echo \"$bashXmd\" > $tzX && chmod 0755 $tzX");
+	$bashXmd = escapeshellarg($bashXmd);
+	$crtFlX = shell_exec("echo $bashXmd > $tzX && chmod 0755 $tzX");
 	$runsh = shell_exec("./$tzX > rpbXz && cat rpbXz");
 	// return $runsh;
 	
@@ -428,7 +445,7 @@ $bot->cmd("/ocua", function () {
 // vnstat
 $bot->cmd("/vnstat", function ($input) {
     $input = escapeshellarg($input);
-    $output = shell_exec("vnstat $input 2>&1");
+    $output = shell_exec("vnstat " . $input . " 2>&1");
     if ($output === null) {
         Bot::sendMessage(
 			$GLOBALS["banner"] . "\n" .
@@ -543,6 +560,7 @@ $bot->cmd("/ifcfg", function ($iface) {
         $ex_ifcfg = shell_exec("ifconfig");
         $pesan_ifcfg = "Viewing all of interfaces";
     } else {
+        $iface = escapeshellarg($iface);
         $ex_ifcfg = shell_exec("ifconfig $iface");
         $pesan_ifcfg = "Viewing info of $iface interface";
     }
@@ -612,6 +630,7 @@ $bot->cmd("/adb_old", function () {
 
 //adb new cmd
 $bot->cmd("/adb", function ($adbcmd1) {
+    $adbcmd1 = escapeshellarg($adbcmd1);
     Bot::sendMessage(
 		$GLOBALS["banner"] . "\n" .
         "<code>" . shell_exec("adb $adbcmd1") . "</code>"
@@ -628,6 +647,7 @@ $bot->cmd("/adbdev", function ($adbcmd2) {
 });
 //$runsh = shell_exec("./$tzX > rpbXz && cat rpbXz");
 $bot->cmd("/adbinfo", function ($adbcmd3) {
+    $adbcmd3 = escapeshellarg($adbcmd3);
     Bot::sendMessage(
 		$GLOBALS["banner"] . "\n" .
         "<code>" . shell_exec("src/plugins/adb-deviceinfo.sh $adbcmd3 > tmpadbinfo && cat tmpadbinfo") . "</code>"
@@ -637,6 +657,7 @@ $bot->cmd("/adbinfo", function ($adbcmd3) {
 });
 
 $bot->cmd("/adbsms", function ($adbcmd4) {
+    $adbcmd4 = escapeshellarg($adbcmd4);
     Bot::sendMessage(
 		$GLOBALS["banner"] . "\n" .
         "<code>" . shell_exec("src/plugins/adb-sms.sh $adbcmd4  > tmpadbsms && cat tmpadbsms") . "</code>"
@@ -646,9 +667,14 @@ $bot->cmd("/adbsms", function ($adbcmd4) {
 });
 
 $bot->cmd("/adbrestnet", function ($adbcmd5, $adbcmd6, $adbcmd7, $adbcmd8, $adbcmd9) {
+    $adbcmd5 = escapeshellarg($adbcmd5);
+    $adbcmd6 = escapeshellarg($adbcmd6);
+    $adbcmd7 = escapeshellarg($adbcmd7);
+    $adbcmd8 = escapeshellarg($adbcmd8);
+    $adbcmd9 = escapeshellarg($adbcmd9);
     Bot::sendMessage(
 		$GLOBALS["banner"] . "\n" .
-        "<code>" . shell_exec("src/plugins/adb-refresh-network.sh \"$adbcmd5\" $adbcmd6 $adbcmd7 $adbcmd8 $adbcmd9 > tmpadbrestnet && cat tmpadbrestnet") . "</code>"
+        "<code>" . shell_exec("src/plugins/adb-refresh-network.sh $adbcmd5 $adbcmd6 $adbcmd7 $adbcmd8 $adbcmd9 > tmpadbrestnet && cat tmpadbrestnet") . "</code>"
 		. "\n\n" 
         ,$GLOBALS["options"]);
 	$rmrunsh = shell_exec("rm tmpadbrestnet");
@@ -686,6 +712,7 @@ $bot->cmd("/myxl", function ($number) {
 
 //Aria2 cmd
 $bot->cmd("/aria2add", function ($url) {
+    $url = escapeshellarg($url);
     Bot::sendMessage(
 		$GLOBALS["banner"] . "\n" .
         "<code>" . shell_exec("src/plugins/add.sh $url") . "</code>"

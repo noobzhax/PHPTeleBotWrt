@@ -34,7 +34,7 @@ $battery_status = shell_exec('adb shell dumpsys battery');
 $signal_status = shell_exec('adb shell dumpsys telephony.registry');
 $device_model = shell_exec('adb shell getprop ro.product.model');
 $android_ver = shell_exec('adb shell getprop ro.build.version.release');
--
+
 // Use regular expressions to extract the battery level
 preg_match('/level: (\d+)/', $battery_status, $matches);
 $battery_level = $matches[1];
