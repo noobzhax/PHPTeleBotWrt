@@ -183,9 +183,12 @@ return $result;
 function MyXL($number) {
     $ch = curl_init();
     
+    // Keep the number as provided by the user
     curl_setopt($ch, CURLOPT_URL, "https://xl-ku.my.id/end.php?check=package&number=$number&version=2");
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
+    curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
     
     $headers = array();
     $headers[] = 'Accept: */*';
@@ -204,16 +207,32 @@ function MyXL($number) {
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
     
     $result = curl_exec($ch);
-    if (curl_errno($ch)) {
-        return 'Error: ' . curl_error($ch);
-    }
+    $curlError = curl_error($ch);
+    $curlErrno = curl_errno($ch);
     curl_close($ch);
+    
+    // Check for cURL errors
+    if ($curlErrno !== 0) {
+        return $GLOBALS["banner"] . "\n" . "⚠️ <b>Error:</b> cURL failed (Error $curlErrno: $curlError)";
+    }
+    
+    // Check for empty response
+    if (empty($result)) {
+        return $GLOBALS["banner"] . "\n" . "⚠️ <b>Error:</b> Empty response from server";
+    }
     
     // Parse JSON response
     $data = json_decode($result, true);
     
-    if (!$data || $data['success'] !== true) {
-        return "Error: " . ($data['message'] ?? 'Unknown error occurred');
+    // Check for JSON parse errors
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        return $GLOBALS["banner"] . "\n" . "⚠️ <b>Error:</b> Failed to parse response\n<code>" . substr($result, 0, 200) . "</code>";
+    }
+    
+    // Check API success status
+    if (!isset($data['success']) || $data['success'] !== true) {
+        $msg = isset($data['message']) && !empty($data['message']) ? $data['message'] : 'Unknown error occurred';
+        return $GLOBALS["banner"] . "\n" . "⚠️ <b>Error:</b> $msg";
     }
     
     $subs = $data['data']['subs_info'];

@@ -15,14 +15,14 @@ function readToken($input)
 
 // Async Background Execution Helper
 function async_exec($command, $startMessage, $chatId, $token) {
-    $escapedCmd = escapeshellcmd($command);
+    // Remove escapeshellcmd as it can break complex commands with pipes/redirects
     $startMsgEscaped = escapeshellarg($startMessage);
     
     // Launch the async helper script in the background.
-    // The script handles sending the start message and the final result.
+    // Use escapeshellarg for the command string itself so it's passed as one argument to async_exec.php
     shell_exec(
         "php " . __DIR__ . "/src/async_exec.php " .
-        escapeshellarg($escapedCmd) . " " .
+        escapeshellarg($command) . " " .
         escapeshellarg($chatId) . " " .
         escapeshellarg($token) . " " .
         $startMsgEscaped .
