@@ -183,16 +183,11 @@ For detailed information including:
 
 Visit: **[https://www.helmiau.com/blog/phptelebotwrt](https://www.helmiau.com/blog/phptelebotwrt)**
 
-## 💝 Support & Donations
-
-If you find this project useful, please consider supporting the developer:
-
-[![Donate](https://img.shields.io/badge/Donate-Click%20Here-red.svg)](https://www.helmiau.com/pay/index_en.html)
-
 ## 📜 License
 
-Copyright © 2023 [Helmi Amirudin](https://www.helmiau.com)  
-Licensed under the terms of the LICENSE file.
+This is a fork of [PHPTeleBotWrt](https://github.com/helmiau/PHPTeleBotWrt) by [Helmi Amirudin](https://www.helmiau.com). 
+
+For the original project license, please refer to the [LICENSE](/LICENSE) file or visit the [main repository](https://github.com/helmiau/PHPTeleBotWrt).
 
 ---
 

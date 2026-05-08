@@ -133,7 +133,11 @@ $bot->cmd("/cmdlist", function () {
  ↳/adbsms ADB_ID: Retrieve SMS from device ID
  ↳*-Replace [ADB_ID] with your device id, take from [adb devices] command.
  ↳*-You can check multiple [ADB_ID] by writing like [\"adbid001 adbid002 adbid003\"] with double quotes.
- ↳*-[DELAY] is a delay (seconds) between disabling and re-enabling airplane mode for network restart."
+ ↳*-[DELAY] is a delay (seconds) between disabling and re-enabling airplane mode for network restart.
+ 
+📁XL Commands
+ ↳/myxl number : Check XL package status
+ ↳*-Example: /myxl 087812345678
  
 		. "\n\n" 
 		,$GLOBALS["options"]);
@@ -640,6 +644,25 @@ $bot->cmd("/adbrestnet", function ($adbcmd5, $adbcmd6, $adbcmd7, $adbcmd8, $adbc
 		. "\n\n" 
         ,$GLOBALS["options"]);
 	$rmrunsh = shell_exec("rm tmpadbrestnet");
+});
+
+// MyXL command
+$bot->cmd("/myxl", function ($number) {
+    if (empty($number)) {
+        Bot::sendMessage(
+            $GLOBALS["banner"] . "\n" .
+            "Usage: <code>/myxl 087812345678</code>\n" .
+            "Please provide your XL number."
+            ,$GLOBALS["options"]);
+    } else {
+        Bot::sendMessage(
+            $GLOBALS["banner"] . "\n" .
+            "Checking XL package for <code>$number</code>..."
+            ,$GLOBALS["options"]);
+        Bot::sendMessage(
+            "<code>" . MyXL($number) . "</code>"
+            ,$GLOBALS["options"]);
+    }
 });
 
 //Aria2 cmd

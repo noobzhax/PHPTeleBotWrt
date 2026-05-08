@@ -179,3 +179,71 @@ $result = shell_exec('speedtest > result_SpeedTST && cat result_SpeedTST');
 return $result;
 
 }
+
+function MyXL($number) {
+    $ch = curl_init();
+    
+    curl_setopt($ch, CURLOPT_URL, "https://xl-ku.my.id/end.php?check=package&number=$number&version=2");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
+    
+    $headers = array();
+    $headers[] = 'Accept: */*';
+    $headers[] = 'Accept-Language: en-US,en;q=0.6';
+    $headers[] = 'Priority: u=1, i';
+    $headers[] = 'Referer: https://xl-ku.my.id/';
+    $headers[] = 'Sec-Ch-Ua: "Chromium";v="148", "Brave";v="148", "Not/A)Brand";v="99"';
+    $headers[] = 'Sec-Ch-Ua-Mobile: ?1';
+    $headers[] = 'Sec-Ch-Ua-Platform: "Android"';
+    $headers[] = 'Sec-Fetch-Dest: empty';
+    $headers[] = 'Sec-Fetch-Mode: cors';
+    $headers[] = 'Sec-Fetch-Site: same-origin';
+    $headers[] = 'Sec-Gpc: 1';
+    $headers[] = 'User-Agent: Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Mobile Safari/537.36';
+    
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    
+    $result = curl_exec($ch);
+    if (curl_errno($ch)) {
+        return 'Error: ' . curl_error($ch);
+    }
+    curl_close($ch);
+    
+    // Parse JSON response
+    $data = json_decode($result, true);
+    
+    if (!$data || $data['success'] !== true) {
+        return "Error: " . ($data['message'] ?? 'Unknown error occurred');
+    }
+    
+    $subs = $data['data']['subs_info'];
+    $packages = $data['data']['package_info']['packages'];
+    
+    $output = "📱 <b>XL Package Info</b>\n\n";
+    $output .= "━━━━━━━━━━━━━━━━━━\n";
+    $output .= "📋 <b>Subscriber Info</b>\n";
+    $output .= "↳ Number: <code>{$subs['msisdn']}</code>\n";
+    $output .= "↳ Operator: {$subs['operator']}\n";
+    $output .= "↳ Network: {$subs['net_type']}\n";
+    $output .= "↳ Tenure: {$subs['tenure']}\n";
+    $output .= "↳ ID Verified: {$subs['id_verified']}\n";
+    $output .= "↳ Exp Date: {$subs['exp_date']}\n";
+    $output .= "↳ Grace Until: {$subs['grace_until']}\n";
+    $output .= "↳ VoLTE: " . ($subs['volte']['device'] ? '✅' : '❌') . " Device, " . ($subs['volte']['area'] ? '✅' : '❌') . " Area, " . ($subs['volte']['simcard'] ? '✅' : '❌') . " SIM\n";
+    $output .= "━━━━━━━━━━━━━━━━━━\n";
+    
+    foreach ($packages as $pkg) {
+        $output .= "\n📦 <b>{$pkg['name']}</b>\n";
+        $output .= "↳ Exp: {$pkg['expiry']}\n";
+        
+        foreach ($pkg['quotas'] as $quota) {
+            $bar = str_repeat("🟩", round($quota['percent'] / 10)) . str_repeat("🟥", 10 - round($quota['percent'] / 10));
+            $output .= "↳ {$quota['name']}: {$quota['remaining']} / {$quota['total']} ($bar {$quota['percent']}%)\n";
+        }
+        $output .= "━━━━━━━━━━━━━━━━━━\n";
+    }
+    
+    $output .= "\n<i>PHPTeleBotWrt</i>";
+    
+    return $output;
+}
