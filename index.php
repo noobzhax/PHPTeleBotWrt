@@ -21,6 +21,35 @@ function readToken($input)
     return $input == "token" ? $raw[0] : $raw[1];
 }
 
+// XL Saved Numbers helpers
+function getUserNumbers($chatId) {
+    $file = __DIR__ . "/databot_xlnumbers";
+    if (!file_exists($file)) return [];
+    $data = json_decode(file_get_contents($file), true);
+    return isset($data[$chatId]) ? $data[$chatId] : [];
+}
+
+function saveUserNumber($chatId, $number) {
+    $file = __DIR__ . "/databot_xlnumbers";
+    $data = file_exists($file) ? json_decode(file_get_contents($file), true) : [];
+    if (!isset($data[$chatId])) $data[$chatId] = [];
+    if (!in_array($number, $data[$chatId])) {
+        $data[$chatId][] = $number;
+        file_put_contents($file, json_encode($data));
+    }
+}
+
+function deleteUserNumber($chatId, $number) {
+    $file = __DIR__ . "/databot_xlnumbers";
+    if (!file_exists($file)) return;
+    $data = json_decode(file_get_contents($file), true);
+    if (isset($data[$chatId])) {
+        $data[$chatId] = array_values(array_diff($data[$chatId], [$number]));
+        if (empty($data[$chatId])) unset($data[$chatId]);
+        file_put_contents($file, json_encode($data));
+    }
+}
+
 // Async Background Execution Helper
 function async_exec($command, $startMessage, $chatId, $token) {
     // Remove escapeshellcmd as it can break complex commands with pipes/redirects
@@ -686,31 +715,62 @@ $bot->cmd("/adbrestnet", function ($adbcmd5, $adbcmd6, $adbcmd7, $adbcmd8, $adbc
 
 // MyXL command
 $bot->cmd("/myxl", function ($number) {
+    $message = Bot::message();
+    $chatId = $message['chat']['id'];
+    $savedNums = getUserNumbers($chatId);
+    
     if (empty($number)) {
-        Bot::sendMessage(
-            $GLOBALS["banner"] . "\n" .
-            "📱 <b>XL Package Checker</b>\n\n" .
-            "ℹ️ This command allows you to check your XL (Axis) number\'s package info including remaining quota, expiry dates, and subscriber details.\n\n" .
-            "<b>Usage:</b>\n" .
-            "<code>/myxl 087812345678</code>\n\n" .
-            "<b>Supported Number Formats:</b>\n" .
-            "↳ With country code: <code>6287812345678</code>\n" .
-            "↳ Without code: <code>087812345678</code>\n\n" .
-            "<b>Example:</b>\n" .
-            "↳ <code>/myxl 087812345678</code>\n" .
-            "↳ <code>/myxl 6287812345678</code>\n\n" .
-            "<b>Note:</b>\n" .
-            "↳ Only supports XL and Axis numbers.\n" .
-            "↳ Make sure the number is active."
-            ,$GLOBALS["options"]);
+        if (empty($savedNums)) {
+            Bot::sendMessage(
+                $GLOBALS["banner"] . "\n" .
+                "📱 <b>XL Package Checker</b>\n\n" .
+                "ℹ️ This command allows you to check your XL (Axis) number\\'s package info including remaining quota, expiry dates, and subscriber details.\n\n" .
+                "<b>Usage:</b>\n" .
+                "<code>/myxl 087812345678</code>\n\n" .
+                "<b>Supported Number Formats:</b>\n" .
+                "↳ With country code: <code>6287812345678</code>\n" .
+                "↳ Without code: <code>087812345678</code>\n\n" .
+                "<b>Example:</b>\n" .
+                "↳ <code>/myxl 087812345678</code>\n" .
+                "↳ <code>/myxl 6287812345678</code>\n\n" .
+                "<b>Note:</b>\n" .
+                "↳ Only supports XL and Axis numbers.\n" .
+                "↳ Once you check a number, you can save it for quick access."
+                ,$GLOBALS["options"]);
+        } else {
+            $keyboard = [];
+            foreach ($savedNums as $num) {
+                $keyboard[] = [["text" => "📱 $num", "callback_data" => "myxlcheck:$num"]];
+            }
+            $keyboard[] = [["text" => "📝 Save New Number", "callback_data" => "myxlsaveform"]];
+
+            $opts = $GLOBALS["options"];
+            $opts["reply_markup"] = json_encode(["inline_keyboard" => $keyboard]);
+
+            Bot::sendMessage(
+                $GLOBALS["banner"] . "\n" .
+                "📱 <b>Saved Numbers</b>\n\nSelect a number to check:",
+                $opts
+            );
+        }
     } else {
         Bot::sendMessage(
             $GLOBALS["banner"] . "\n" .
             "Checking XL package for <code>$number</code>..."
             ,$GLOBALS["options"]);
-        Bot::sendMessage(
-            MyXL($number)
-            ,$GLOBALS["options"]);
+        $result = MyXL($number);
+        
+        if (!in_array($number, $savedNums)) {
+            $keyboard = [[["text" => "💾 Save This Number", "callback_data" => "myxlsave:$number"]]];
+            $opts = $GLOBALS["options"];
+            $opts["reply_markup"] = json_encode(["inline_keyboard" => $keyboard]);
+            Bot::sendMessage($result, $opts);
+        } else {
+            $keyboard = [[["text" => "🗑 Delete This Number", "callback_data" => "myxldel:$number"]]];
+            $opts = $GLOBALS["options"];
+            $opts["reply_markup"] = json_encode(["inline_keyboard" => $keyboard]);
+            Bot::sendMessage($result, $opts);
+        }
     }
 });
 
@@ -819,8 +879,41 @@ $bot->cmd("/botcr", function () {
 	unset($cron_stat2);
 });
 
+// Callback handler for MyXL saved numbers
+$bot->on("callback", function ($data) {
+    $message = Bot::message();
+    $chatId = $message['message']['chat']['id'];
+    $msgId = $message['message']['message_id'];
+
+    if (strpos($data, 'myxlcheck:') === 0) {
+        $number = substr($data, 10);
+        Bot::answerCallbackQuery("Checking $number...");
+        $result = MyXL($number);
+        $savedNums = getUserNumbers($chatId);
+        $keyboard = in_array($number, $savedNums)
+            ? [[["text" => "🗑 Delete This Number", "callback_data" => "myxldel:$number"]]]
+            : [[["text" => "💾 Save This Number", "callback_data" => "myxlsave:$number"]]];
+        $opts = $GLOBALS["options"];
+        $opts["reply_markup"] = json_encode(["inline_keyboard" => $keyboard]);
+        Bot::sendMessage($result, $opts);
+    } elseif (strpos($data, 'myxlsave:') === 0) {
+        $number = substr($data, 9);
+        saveUserNumber($chatId, $number);
+        Bot::answerCallbackQuery("Number $number saved!");
+        Bot::editMessageReplyMarkup(["message_id" => $msgId, "reply_markup" => ["inline_keyboard" => [[["text" => "🗑 Delete This Number", "callback_data" => "myxldel:$number"]]]]]);
+    } elseif (strpos($data, 'myxldel:') === 0) {
+        $number = substr($data, 8);
+        deleteUserNumber($chatId, $number);
+        Bot::answerCallbackQuery("Number $number deleted!");
+        Bot::editMessageReplyMarkup(["message_id" => $msgId, "reply_markup" => ["inline_keyboard" => [[["text" => "💾 Save This Number", "callback_data" => "myxlsave:$number"]]]]]);
+    } elseif ($data === 'myxlsaveform') {
+        Bot::answerCallbackQuery("Use /myxl 087812345678 to check and save a number");
+    }
+});
+
 //inline command
 $bot->on("inline", function ($cmd, $input) {
+    $results = [];
     if ($cmd == "proxies") {
         $proxiesData = OpenClashProxies();
         $results[] = [
