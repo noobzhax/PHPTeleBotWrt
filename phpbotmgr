@@ -42,7 +42,7 @@ bootX () {
 		sed -i 's#exit 0##g' /etc/rc.local
 		cat << 'EOF' >> /etc/rc.local
 #PHPTeleBotWrt-Start
-cd /root/PHPTeleBotWrt && if [[ $(ls {/bin,/usr/bin,/usr/sbin} | grep -c "^php8-cli") > 0 && $(ps aux | grep -c "PHPTeleBotWrt") < 2 ]];then php8-cli index.php &>/dev/null;else php-cli index.php &>/dev/null; fi
+cd /root/PHPTeleBotWrt && if [[ $(ls {/bin,/usr/bin,/usr/sbin} | grep -c "^php8-cli") -gt 0 && $(ps aux | grep -c "PHPTeleBotWrt") -lt 2 ]];then php8-cli index.php &>/dev/null;else php-cli index.php &>/dev/null; fi
 #PHPTeleBotWrt-End
 
 exit 0
@@ -60,7 +60,7 @@ cronX () {
 		sed -i 's#exit 0##g' /etc/crontabs/root
 		cat << 'EOF' >> /etc/crontabs/root
 #PHPTeleBotWrt-Start
-*/4 * * * * cd /root/PHPTeleBotWrt && if [[ $(ls {/bin,/usr/bin,/usr/sbin} | grep -c "^php8-cli") > 0 && $(ps aux | grep -c "PHPTeleBotWrt") < 2 ]];then php8-cli index.php;else php-cli index.php; fi
+*/4 * * * * cd /root/PHPTeleBotWrt && if [[ $(ls {/bin,/usr/bin,/usr/sbin} | grep -c "^php8-cli") -gt 0 && $(ps aux | grep -c "PHPTeleBotWrt") -lt 2 ]];then php8-cli index.php;else php-cli index.php; fi
 EOF
 		echo -e "$TLNAME added to Scheduled Tasks (cron).."
 	else
@@ -299,7 +299,7 @@ elif [[ $1 == "r" ]]; then
 # Check status command
 elif [[ $1 == "c" ]]; then
 	# https://linuxconfig.org/how-to-kill-a-running-process-on-linux
-	if ps -a | grep -q "php-cli\|php8-cli"; then
+	if ps -a | grep -q "[p]hp-cli|[p]hp8-cli"; then
 		echo -e "✔️ $TLNAME is running with detail:"
 		jobs -p
 		# ps -a | grep "php-cli\|php8-cli"
@@ -317,8 +317,9 @@ elif [[ $1 == "s" ]]; then
 	# [ -n "$pids" ] && kill -- "${pids[@]/#/-}"
 	
 	# https://linuxconfig.org/how-to-kill-a-running-process-on-linux
-	if ps -a | grep -q "php-cli\|php8-cli"; then
-		kill $(ps -a | grep "php-cli\|php8-cli")
+	if ps -a | grep -q "[p]hp-cli|[p]hp8-cli"; then
+		pids=$(ps -a | grep "[p]hp-cli|[p]hp8-cli" | awk '{print $1}')
+		kill $pids
 		echo -e "✔️ $TLNAME stopped successfully."
 		exit 0
 	else
