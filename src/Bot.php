@@ -64,7 +64,7 @@ class Bot
         }
 
         if (isset($data['reply_markup']) && is_array($data['reply_markup'])) {
-            $data['reply_markup'] = json_encode($data['reply_markup']);
+            $data['reply_markup'] = json_encode($data['reply_markup'], JSON_UNESCAPED_UNICODE);
         }
 
         $ch = curl_init();

@@ -361,9 +361,9 @@ $bot->cmd("/rs", function ($app = '') {
 $bot->cmd("/sh", function ($bashXmd) {
 	$tzX = "sht.sh";
 	$bashXmd = escapeshellarg($bashXmd);
-	$crtFlX = shell_exec("echo $bashXmd > $tzX && chmod 0755 $tzX");
+	shell_exec("echo $bashXmd > $tzX && chmod 0755 $tzX");
 	$runsh = shell_exec("./$tzX > rpbXz && cat rpbXz");
-	// return $runsh;
+	shell_exec("rm -f $tzX rpbXz");
 	
 	Bot::sendMessage(
 		$GLOBALS["banner"]
@@ -461,13 +461,13 @@ $bot->cmd("/ocua", function () {
     $scriptContent .= "core_tun_new=$(/etc/openclash/core/clash_tun -v 2>/dev/null | awk -F ' ' '{print \$2}' 2>/dev/null)\n";
     $scriptContent .= "core_meta_new=$(/etc/openclash/core/clash_meta -v 2>/dev/null | awk -F ' ' '{print \$3}' 2>/dev/null)\n";
     $scriptContent .= "oc_app_info=\"OpenClash App is already at latest version\"\n";
-    $scriptContent .= "[ \"\$oc_app_new\" != \"$oc_app_old\" ] && oc_app_info=\"OpenClash updated to \$oc_app_new\"\n";
+    $scriptContent .= "[ \"\$oc_app_new\" != " . escapeshellarg($oc_app_old) . " ] && oc_app_info=\"OpenClash updated to \$oc_app_new\"\n";
     $scriptContent .= "core_new_info=\"Dev core is already at latest version\"\n";
-    $scriptContent .= "[ \"\$core_new\" != \"$core_old\" ] && core_new_info=\"Dev core updated to \$core_new\"\n";
+    $scriptContent .= "[ \"\$core_new\" != " . escapeshellarg($core_old) . " ] && core_new_info=\"Dev core updated to \$core_new\"\n";
     $scriptContent .= "core_tun_info=\"TUN core is already at latest version\"\n";
-    $scriptContent .= "[ \"\$core_tun_new\" != \"$core_tun_old\" ] && core_tun_info=\"TUN core updated to \$core_tun_new\"\n";
+    $scriptContent .= "[ \"\$core_tun_new\" != " . escapeshellarg($core_tun_old) . " ] && core_tun_info=\"TUN core updated to \$core_tun_new\"\n";
     $scriptContent .= "core_meta_info=\"Meta core is already at latest version\"\n";
-    $scriptContent .= "[ \"\$core_meta_new\" != \"$core_meta_old\" ] && core_meta_info=\"Meta core updated to \$core_meta_new\"\n";
+    $scriptContent .= "[ \"\$core_meta_new\" != " . escapeshellarg($core_meta_old) . " ] && core_meta_info=\"Meta core updated to \$core_meta_new\"\n";
     $scriptContent .= "curl -s -X POST \"https://api.telegram.org/bot$token/sendMessage\" \\\n    -d \"chat_id=$chatId\" \\\n    -d \"text=<b>PHPTeleBotWrt</b>\\n\\n<b>OpenClash Update Complete!</b>\\n\\n\$oc_app_info\\n\$core_new_info\\n\$core_tun_info\\n\$core_meta_info\" \\\n    -d \"parse_mode=html\"\n";
     $scriptContent .= "rm \$0\n";
 
@@ -589,12 +589,12 @@ $bot->cmd("/fwlist", function () {
 
 // Ifconfig
 $bot->cmd("/ifcfg", function ($iface) {
-    if ($iface === null) {
+    if (empty($iface)) {
         $ex_ifcfg = shell_exec("ifconfig");
         $pesan_ifcfg = "Viewing all of interfaces";
     } else {
-        $iface = escapeshellarg($iface);
-        $ex_ifcfg = shell_exec("ifconfig $iface");
+        $safe_iface = escapeshellarg($iface);
+        $ex_ifcfg = shell_exec("ifconfig $safe_iface");
         $pesan_ifcfg = "Viewing info of $iface interface";
     }
 	
@@ -745,7 +745,7 @@ $bot->cmd("/myxl", function ($number) {
             $keyboard[] = [["text" => "📝 Save New Number", "callback_data" => "myxlsaveform"]];
 
             $opts = $GLOBALS["options"];
-            $opts["reply_markup"] = json_encode(["inline_keyboard" => $keyboard]);
+            $opts["reply_markup"] = ["inline_keyboard" => $keyboard];
 
             Bot::sendMessage(
                 $GLOBALS["banner"] . "\n" .
@@ -763,12 +763,12 @@ $bot->cmd("/myxl", function ($number) {
         if (!in_array($number, $savedNums)) {
             $keyboard = [[["text" => "💾 Save This Number", "callback_data" => "myxlsave:$number"]]];
             $opts = $GLOBALS["options"];
-            $opts["reply_markup"] = json_encode(["inline_keyboard" => $keyboard]);
+            $opts["reply_markup"] = ["inline_keyboard" => $keyboard];
             Bot::sendMessage($result, $opts);
         } else {
             $keyboard = [[["text" => "🗑 Delete This Number", "callback_data" => "myxldel:$number"]]];
             $opts = $GLOBALS["options"];
-            $opts["reply_markup"] = json_encode(["inline_keyboard" => $keyboard]);
+            $opts["reply_markup"] = ["inline_keyboard" => $keyboard];
             Bot::sendMessage($result, $opts);
         }
     }
@@ -894,7 +894,7 @@ $bot->on("callback", function ($data) {
             ? [[["text" => "🗑 Delete This Number", "callback_data" => "myxldel:$number"]]]
             : [[["text" => "💾 Save This Number", "callback_data" => "myxlsave:$number"]]];
         $opts = $GLOBALS["options"];
-        $opts["reply_markup"] = json_encode(["inline_keyboard" => $keyboard]);
+        $opts["reply_markup"] = ["inline_keyboard" => $keyboard];
         Bot::sendMessage($result, $opts);
     } elseif (strpos($data, 'myxlsave:') === 0) {
         $number = substr($data, 9);
@@ -933,12 +933,13 @@ $bot->on("inline", function ($cmd, $input) {
             "message_text" => "<code>" . $rulesData . "</code>",
         ];
     } elseif ($cmd == "myxl") {
+        $myxlResult = MyXL($input);
         $results[] = [
             "type" => "article",
             "id" => "unique_id1",
-            "title" => MyXL($input),
+            "title" => "XL Package Info",
             "parse_mode" => "html",
-            "message_text" => "<code>" . MyXL($input) . "</code>",
+            "message_text" => "<code>" . $myxlResult . "</code>",
         ];
     }
 
